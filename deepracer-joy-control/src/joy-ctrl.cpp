@@ -2,6 +2,7 @@
 #include "rclcpp/rclcpp.hpp"
 #include "sensor_msgs/msg/joy.hpp"
 #include "std_msgs/msg/string.hpp"
+#include "deepracer_interfaces_pkg/msg/servo_ctrl_msg.hpp"
 
 #include <chrono>
 #include <functional>
@@ -20,7 +21,7 @@ class DeepRacerJoyControl : public rclcpp::Node
     DeepRacerJoyControl()
     : Node("joy_ctrl"), count_(0)
     {
-      publisher_ = this->create_publisher<std_msgs::msg::String>("topic", 10);
+      publisher_ = this->create_publisher<deepracer_interfaces_pkg::msg::ServoCtrlMsg>("/ctrl_pkg/servo_msg", 10);
       timer_ = this->create_wall_timer(500ms, std::bind(&DeepRacerJoyControl::timer_callback, this));
       subscription_ = this->create_subscription<sensor_msgs::msg::Joy>(
 			"/joy", 10, std::bind(&DeepRacerJoyControl::get_joy_ctrl, this, _1));
@@ -34,15 +35,17 @@ class DeepRacerJoyControl : public rclcpp::Node
     
     void timer_callback()
     {
-      auto message = std_msgs::msg::String();
-      message.data = "Hello, world! " + std::to_string(count_++);
-      RCLCPP_INFO(this->get_logger(), "Publishing: '%s'", message.data.c_str());
-      publisher_->publish(message);
+      count_++;
+      auto servoMsg = deepracer_interfaces_pkg::msg::ServoCtrlMsg();
+      servoMsg.angle = (((count_%2) == 0)? -1.0:1.0);
+      servoMsg.throttle = 0.1;
+      RCLCPP_INFO(this->get_logger(), "Publishing: '%f'", servoMsg.angle);
+      publisher_->publish(servoMsg);
     }
     
     rclcpp::TimerBase::SharedPtr timer_;
     rclcpp::Subscription<sensor_msgs::msg::Joy>::SharedPtr subscription_;
-    rclcpp::Publisher<std_msgs::msg::String>::SharedPtr publisher_;
+    rclcpp::Publisher<deepracer_interfaces_pkg::msg::ServoCtrlMsg>::SharedPtr publisher_;
     size_t count_;
 };
 
