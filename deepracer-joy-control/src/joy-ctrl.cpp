@@ -11,6 +11,7 @@
 #include <cstdio>
 #include <iostream>
 #include <iomanip>
+#include <sstream>
 
 #include <unistd.h>
 #include <sys/ioctl.h>
@@ -44,10 +45,13 @@ class DeepRacerJoyControl : public rclcpp::Node
       ioctl(joystick_fd, JSIOCGAXES, &num_of_axis);
       ioctl(joystick_fd, JSIOCGBUTTONS, &num_of_buttons);
       ioctl(joystick_fd, JSIOCGNAME(80), &name_of_joystick);
-
-      RCLCPP_INFO(this->get_logger(), "Joystick Connected: %s", name_of_joystick); 
+ 
       data.joy_button.resize(num_of_buttons, 0);
       data.joy_axis.resize(num_of_axis, 0);
+
+      RCLCPP_INFO(this->get_logger(), "Joystick Connected: %s", name_of_joystick);
+      RCLCPP_INFO(this->get_logger(), "Joystick Number of Axes: %s", num_of_axis);
+      RCLCPP_INFO(this->get_logger(), "Joystick Number of Buttons: %s", num_of_buttons);
 
       publisher_ = this->create_publisher<deepracer_interfaces_pkg::msg::ServoCtrlMsg>("/ctrl_pkg/servo_msg", 10);
       timer_ = this->create_wall_timer(100ms, std::bind(&DeepRacerJoyControl::timer_callback, this));
@@ -95,15 +99,22 @@ class DeepRacerJoyControl : public rclcpp::Node
         break;
       }
 
-    std::cout << "axis/10000: ";
-    for(size_t i(0); i<data.joy_axis.size(); ++i)
-      std::cout<<" "<<std::setw(2)<<data.joy_axis[i]/10000;
-    std::cout <<  std::endl;
+      std::stringstream buffer;
 
-    std::cout << "  button: ";
-    for(size_t i(0); i<data.joy_button.size(); ++i)
-      std::cout<<" "<<(int)data.joy_button[i];
-    std::cout << std::endl;
+      buffer << "axis/10000: ";
+      for(size_t i(0); i<data.joy_axis.size(); ++i)
+        buffer << " " 
+               << std::setw(2)
+               << data.joy_axis[i]/10000;
+               
+      buffer <<  std::endl;
+
+      buffer << "  button: ";
+      for(size_t i(0); i<data.joy_button.size(); ++i)
+        buffer << " " 
+               << (int)data.joy_button[i];
+
+      buffer << std::endl;
 
     }
     
