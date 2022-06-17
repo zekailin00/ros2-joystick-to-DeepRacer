@@ -115,7 +115,8 @@ class DeepRacerJoyControl : public rclcpp::Node
                << (int)data.joy_button[i];
 
       buffer << std::endl;
-
+      
+      RCLCPP_INFO(this->get_logger(), "Message %d: " + buffer.str(), _count); 
     }
     
     rclcpp::TimerBase::SharedPtr timer_;
