@@ -58,7 +58,7 @@ class DeepRacerJoyControl : public rclcpp::Node
       RCLCPP_INFO(this->get_logger(), "Joystick Number of Buttons: %d", num_of_buttons);
 
       publisher_ = this->create_publisher<deepracer_interfaces_pkg::msg::ServoCtrlMsg>("/ctrl_pkg/servo_msg", 10);
-      timer_ = this->create_wall_timer(100ms, std::bind(&DeepRacerJoyControl::timer_callback, this));
+      timer_ = this->create_wall_timer(5ms, std::bind(&DeepRacerJoyControl::timer_callback, this));
       subscription_ = this->create_subscription<sensor_msgs::msg::Joy>(
 			"/joy", 10, std::bind(&DeepRacerJoyControl::get_joy_ctrl, this, _1));
     }
@@ -123,7 +123,7 @@ class DeepRacerJoyControl : public rclcpp::Node
       //RCLCPP_INFO(this->get_logger(), "Message %d: " + buffer.str(), count_);
 
       auto servoMsg = deepracer_interfaces_pkg::msg::ServoCtrlMsg();  
-		  servoMsg.angle = static_cast<float>(data.joy_axis[0])/INT16_MAX;
+		  servoMsg.angle = -(static_cast<float>(data.joy_axis[0])/INT16_MAX);
 		  servoMsg.throttle = -(static_cast<float>(data.joy_axis[1])/INT16_MAX); 
 		  RCLCPP_INFO(this->get_logger(), "Active Angle: '%f'", servoMsg.angle); 
 		  RCLCPP_INFO(this->get_logger(), "Active Throttle: '%f'", servoMsg.throttle); 
