@@ -8,6 +8,7 @@
 #include <functional>
 #include <memory>
 #include <string>
+#include <fcntl.h>
 
 using namespace std::chrono_literals;
 using std::placeholders::_1;
@@ -21,6 +22,13 @@ class DeepRacerJoyControl : public rclcpp::Node
     DeepRacerJoyControl()
     : Node("joy_ctrl"), count_(0), sensitivity(0.2)
     {
+      joystick_fd = open(JOYSTICK_DEV, O_RDONLY | O_NONBLOCK);
+      if (joystick_fd < 0) 
+      {
+        RCLCPP_INFO(this->get_logger(), "Joystick error: %d", joystick_fd; 
+        exit(1);
+      }
+
       publisher_ = this->create_publisher<deepracer_interfaces_pkg::msg::ServoCtrlMsg>("/ctrl_pkg/servo_msg", 10);
       timer_ = this->create_wall_timer(500ms, std::bind(&DeepRacerJoyControl::timer_callback, this));
       subscription_ = this->create_subscription<sensor_msgs::msg::Joy>(
@@ -64,6 +72,8 @@ class DeepRacerJoyControl : public rclcpp::Node
     rclcpp::Publisher<deepracer_interfaces_pkg::msg::ServoCtrlMsg>::SharedPtr publisher_;
     size_t count_;
     float sensitivity;
+    int joystick_fd;
+    char* JOYSTICK_DEV = "/dev/input/js0"
 };
 
 int main(int argc, char * argv[])
