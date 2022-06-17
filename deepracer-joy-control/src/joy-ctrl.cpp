@@ -12,6 +12,7 @@
 #include <iostream>
 #include <iomanip>
 
+#include <unistd.h>
 #include <sys/ioctl.h>
 #include <linux/joystick.h>
 #include <fcntl.h>
@@ -25,7 +26,7 @@ using std::placeholders::_1;
 struct ControllerData {
   std::vector<char> joy_button;
   std::vector<int> joy_axis;
-}
+};
 
 class DeepRacerJoyControl : public rclcpp::Node
 {
@@ -40,9 +41,9 @@ class DeepRacerJoyControl : public rclcpp::Node
         exit(1);
       }
 
-      ioctl(joy_fd, JSIOCGAXES, &num_of_axis);
-      ioctl(joy_fd, JSIOCGBUTTONS, &num_of_buttons);
-      ioctl(joy_fd, JSIOCGNAME(80), &name_of_joystick);
+      ioctl(joystick_fd, JSIOCGAXES, &num_of_axis);
+      ioctl(joystick_fd, JSIOCGBUTTONS, &num_of_buttons);
+      ioctl(joystick_fd, JSIOCGNAME(80), &name_of_joystick);
 
       RCLCPP_INFO(this->get_logger(), "Joystick Connected: %s", name_of_joystick); 
       data.joy_button.resize(num_of_buttons, 0);
@@ -80,23 +81,23 @@ class DeepRacerJoyControl : public rclcpp::Node
     {
       count_++;
       js_event js;
-      read(joy_fd, &js, sizeof(js_event));
+      read(joystick_fd, &js, sizeof(js_event));
 
       switch (js.type & ~JS_EVENT_INIT)
       {
       case JS_EVENT_AXIS:
-        if((int)js.number>=data.joy_axis.size()) continue;
-        data.joy_axis[(int)js.number]= js.value;
+        if(!((int)js.number>=data.joy_axis.size()))
+          data.joy_axis[(int)js.number]= js.value;
         break;
       case JS_EVENT_BUTTON:
-        if((int)js.number>=data.joy_button.size()) continue;
-        data.joy_button[(int)js.number]= js.value;
+        if(!((int)js.number>=data.joy_button.size()))
+          data.joy_button[(int)js.number]= js.value;
         break;
       }
 
     std::cout << "axis/10000: ";
     for(size_t i(0); i<data.joy_axis.size(); ++i)
-      std::cout<<" "<<setw(2)<<data.joy_axis[i]/10000;
+      std::cout<<" "<<std::setw(2)<<data.joy_axis[i]/10000;
     std::cout <<  std::endl;
 
     std::cout << "  button: ";
