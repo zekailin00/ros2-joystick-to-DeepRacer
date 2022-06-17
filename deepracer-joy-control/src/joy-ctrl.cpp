@@ -120,8 +120,14 @@ class DeepRacerJoyControl : public rclcpp::Node
 
       buffer << std::endl;
       
-      RCLCPP_INFO(this->get_logger(), "Message %d: " + buffer.str(), count_);
+      //RCLCPP_INFO(this->get_logger(), "Message %d: " + buffer.str(), count_);
 
+      auto servoMsg = deepracer_interfaces_pkg::msg::ServoCtrlMsg();  
+		  servoMsg.angle = static_cast<float>(data.joy_axis[0])/INT16_MAX;
+		  servoMsg.throttle = -(static_cast<float>(data.joy_axis[1])/INT16_MAX); 
+		  RCLCPP_INFO(this->get_logger(), "Active Angle: '%f'", servoMsg.angle); 
+		  RCLCPP_INFO(this->get_logger(), "Active Throttle: '%f'", servoMsg.throttle); 
+		  publisher_->publish(servoMsg);
 
     }
     
