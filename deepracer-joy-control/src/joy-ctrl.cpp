@@ -18,6 +18,10 @@
 #include <linux/joystick.h>
 #include <fcntl.h>
 
+#ifndef INT16_MAX
+#define INT16_MAX 32767
+#endif
+
 using namespace std::chrono_literals;
 using std::placeholders::_1;
 
@@ -50,8 +54,8 @@ class DeepRacerJoyControl : public rclcpp::Node
       data.joy_axis.resize(num_of_axis, 0);
 
       RCLCPP_INFO(this->get_logger(), "Joystick Connected: %s", name_of_joystick);
-      RCLCPP_INFO(this->get_logger(), "Joystick Number of Axes: %s", num_of_axis);
-      RCLCPP_INFO(this->get_logger(), "Joystick Number of Buttons: %s", num_of_buttons);
+      RCLCPP_INFO(this->get_logger(), "Joystick Number of Axes: %d", num_of_axis);
+      RCLCPP_INFO(this->get_logger(), "Joystick Number of Buttons: %d", num_of_buttons);
 
       publisher_ = this->create_publisher<deepracer_interfaces_pkg::msg::ServoCtrlMsg>("/ctrl_pkg/servo_msg", 10);
       timer_ = this->create_wall_timer(100ms, std::bind(&DeepRacerJoyControl::timer_callback, this));
@@ -105,7 +109,7 @@ class DeepRacerJoyControl : public rclcpp::Node
       for(size_t i(0); i<data.joy_axis.size(); ++i)
         buffer << " " 
                << std::setw(2)
-               << data.joy_axis[i]/10000;
+               << static_cast<float>(data.joy_axis[i])/INT16_MAX;
                
       buffer <<  std::endl;
 
@@ -116,7 +120,9 @@ class DeepRacerJoyControl : public rclcpp::Node
 
       buffer << std::endl;
       
-      RCLCPP_INFO(this->get_logger(), "Message %d: " + buffer.str(), _count); 
+      RCLCPP_INFO(this->get_logger(), "Message %d: " + buffer.str(), count_);
+
+
     }
     
     rclcpp::TimerBase::SharedPtr timer_;
