@@ -8,6 +8,7 @@
 #include <functional>
 #include <memory>
 #include <string>
+#include <linux/joystick.h>
 
 using namespace std::chrono_literals;
 using std::placeholders::_1;
