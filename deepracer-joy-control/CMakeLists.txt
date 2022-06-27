@@ -26,6 +26,8 @@ find_package(rclcpp REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(deepracer_interfaces_pkg REQUIRED)
 
+include_directories(include)
+
 add_executable(joy-ctrl src/joy-ctrl.cpp)
 target_include_directories(joy-ctrl PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
