@@ -28,11 +28,10 @@ find_package(deepracer_interfaces_pkg REQUIRED)
 
 include_directories(include)
 
-add_executable(joy-ctrl src/joy-ctrl.cpp)
+add_library(joy-ctrl src/joy-ctrl.cpp)
 target_include_directories(joy-ctrl PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:include>)
-
 
 ament_export_include_directories(include)
 ament_target_dependencies(joy-ctrl
@@ -42,9 +41,25 @@ ament_target_dependencies(joy-ctrl
 	std_msgs
 	)
 
+ament_export_targets(export_targets HAS_LIBRARY_TARGET)
+ament_export_dependencies(rclcpp std_msgs sensor_msgs deepracer_interfaces_pkg) #add all dependecies here
+
+install(
+  DIRECTORY include/
+  DESTINATION include
+)
+  
+install(
+  TARGETS joy-ctrl
+  EXPORT export_targets
+  LIBRARY DESTINATION lib
+  ARCHIVE DESTINATION lib
+  RUNTIME DESTINATION bin
+  INCLUDES DESTINATION include
+)
+  
 install(TARGETS joy-ctrl
   DESTINATION lib/${PROJECT_NAME})
-ament_export_dependencies(sensor_msgs std_msgs deepracer_interfaces_pkg)
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
